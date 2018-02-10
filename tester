@@ -12,3 +12,8 @@
 (call [1, -1.0])
 (call [(call id), (call me), "test"])
 (call [[1, 2, 3], [1, 2, 3]])
+(test f"1 + 1")
+(test f"1 - 1 + 1 - 1")
+(test f"x * x * x")
+(test f"sin(x)")
+(test f"(1 + 1) - (1 + 1)")
