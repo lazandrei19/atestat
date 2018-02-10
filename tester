@@ -1,0 +1,8 @@
+(call)
+(call 1)
+(call -1)
+(call 1.5)
+(call -1.5)
+(call "test")
+(call (call))
+(call id)
