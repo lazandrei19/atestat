@@ -6,6 +6,8 @@ RPARAN : ')' ;
 LSQBRACK : '[' ;
 RSQBRACK : ']' ;
 COMMA : ',' ;
+DBLQUOTE : '"' ;
+MINUS : '-' ;
 fncall : LPARAN ID arg* RPARAN ;
 arg : fncall
     | literal
@@ -14,8 +16,8 @@ literal : StringLiteral
         | IntLiteral
         | FloatLiteral
         | arrayLiteral;
-StringLiteral : '"' ~('\r' | '\n' | '"')* '"' ;
-IntLiteral : '-'? [0-9]+ ;
-FloatLiteral : '-'? [0-9]+ '.' [0-9]+ ;
+StringLiteral : DBLQUOTE ~('\r' | '\n' | '"')* DBLQUOTE ;
+IntLiteral : MINUS? [0-9]+ ;
+FloatLiteral : MINUS? [0-9]+ '.' [0-9]+ ;
 arrayLiteral : LSQBRACK (arg COMMA)* arg? RSQBRACK ;
 WS : (' ' | '\n' | '\t' | '\r')+ -> skip;
