@@ -1,6 +1,5 @@
 grammar Atestat;
 instructions : fncall+ EOF;
-X : [xX] ;
 ID: [a-zA-Z_][a-zA-Z0-9_]* ;
 LPARAN : '(' ;
 RPARAN : ')' ;
@@ -8,8 +7,12 @@ LSQBRACK : '[' ;
 RSQBRACK : ']' ;
 COMMA : ',' ;
 DBLQUOTE : '"' ;
-MINUS : '-' ;
 MATHFSTART : 'f"' ;
+PLUS : '+' ;
+MINUS : '-' ;
+TIMES : '*' ;
+DIV : '/' ;
+POW : '^' ;
 fncall : LPARAN ID arg* RPARAN ;
 arg : fncall
     | literal
@@ -24,13 +27,12 @@ IntLiteral : MINUS? [0-9]+ ;
 FloatLiteral : MINUS? [0-9]+ '.' [0-9]+ ;
 arrayLiteral : LSQBRACK (arg COMMA)* arg? RSQBRACK ;
 mathFunctionLiteral : MATHFSTART mathExpr DBLQUOTE ;
-mathExpr : LPARAN mathExpr RPARAN
-         | X
+mathExpr : mathExpr POW mathExpr
+         | mathExpr (TIMES | DIV) mathExpr
+         | mathExpr (PLUS | MINUS) mathExpr
+         | LPARAN mathExpr RPARAN
          | mathFunction
-         | Number mathOp Number
-         | Number mathOp mathExpr
-         | mathExpr mathOp Number
-         | mathExpr mathOp mathExpr ;
-mathOp : ('+' | '-' | '*' | '/' | '^') ;
-mathFunction : ID LPARAN X RPARAN ;
+         | Number
+         | ID;
+mathFunction : ID LPARAN mathExpr RPARAN ;
 WS : (' ' | '\n' | '\t' | '\r')+ -> skip;
