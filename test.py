@@ -2,7 +2,7 @@ import sys
 from antlr4 import *
 from gen.AtestatLexer import AtestatLexer
 from gen.AtestatParser import AtestatParser
-
+from Interpreter import Interpreter
 
 def main(argv):
     input = FileStream(argv[1])
@@ -10,8 +10,9 @@ def main(argv):
     stream = CommonTokenStream(lexer)
     parser = AtestatParser(stream)
     tree = parser.instructions()
+    interpreter = Interpreter()
     for fncall in tree.fncall():
-        print(fncall.ID())
+        interpreter.interpret(fncall)
 
 
 if __name__ == '__main__':
