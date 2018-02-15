@@ -1,10 +1,11 @@
 from antlr4 import *
 from gen.AtestatParser import AtestatParser
+from VariableCtx import VariableCTX
 
 
 class Interpreter:
 
-    code_vars = {}
+    code_vars = VariableCTX()
 
     def get_number(self, number: AtestatParser.Number):
         return float(str(number))
@@ -15,7 +16,7 @@ class Interpreter:
         elif math_expr.ID() is not None:
             math_id = str(math_expr.ID())
             if math_id in self.code_vars.keys():
-                return self.code_vars[math_id]
+                return self.code_vars.get(math_id)
             else:
                 return 0
         elif math_expr.mathFunction() is not None:
@@ -62,7 +63,7 @@ class Interpreter:
             elif arg.literal() is not None:
                 resolved_args.append(self.resolve_literal(arg.literal()))
             elif arg.ID() is not None:
-                resolved_args.append(self.code_vars[arg.ID()])
+                resolved_args.append(self.code_vars.get(arg.ID()))
         return resolved_args
 
     def execute(self, fnid, args):
