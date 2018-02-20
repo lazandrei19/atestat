@@ -1,11 +1,13 @@
 from antlr4 import *
 from gen.AtestatParser import AtestatParser
 from VariableCtx import VariableCTX
+from FunctionCtx import FunctionCTX
 
 
 class Interpreter:
 
     code_vars = VariableCTX()
+    functions = FunctionCTX(code_vars)
 
     def get_number(self, number: AtestatParser.Number):
         return float(str(number))
@@ -67,7 +69,9 @@ class Interpreter:
         return resolved_args
 
     def execute(self, fnid, args):
-        pass
+        if fnid == "print":
+            for arg in args:
+                print(arg)
 
     def interpret(self, fncall: AtestatParser.FncallContext):
         args = self.resolve_args(fncall.arg())
