@@ -31,5 +31,5 @@ class VariableCTX:
             self.values.pop(i)
             self.keys.pop(i)
 
-    def keys(self):
+    def get_keys(self):
         return self.keys

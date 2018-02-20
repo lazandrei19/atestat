@@ -17,7 +17,7 @@ class Interpreter:
             return self.get_number(math_expr.Number())
         elif math_expr.ID() is not None:
             math_id = str(math_expr.ID())
-            if math_id in self.code_vars.keys():
+            if math_id in self.code_vars.get_keys():
                 return self.code_vars.get(math_id)
             else:
                 return 0
@@ -52,7 +52,7 @@ class Interpreter:
             math_function = literal.mathFunctionLiteral()
             return self.analyze_math_expr(math_function.mathExpr())
         elif literal.StringLiteral() is not None:
-            return str(literal.StringLiteral())
+            return str(literal.StringLiteral())[1:-1]
         elif literal.Number() is not None:
             return self.get_number(literal.Number())
 
@@ -65,7 +65,7 @@ class Interpreter:
             elif arg.literal() is not None:
                 resolved_args.append(self.resolve_literal(arg.literal()))
             elif arg.ID() is not None:
-                resolved_args.append(self.code_vars.get(arg.ID()))
+                resolved_args.append(self.code_vars.get(str(arg.ID())))
         return resolved_args
 
     def execute(self, fnid, args):
@@ -76,6 +76,9 @@ class Interpreter:
             return None
         elif sfnid == "return":
             return args[0]
+        elif sfnid == "define_var":
+            self.code_vars.init(args[0], args[1])
+
 
     def interpret(self, fncall: AtestatParser.FncallContext):
         args = self.resolve_args(fncall.arg())
