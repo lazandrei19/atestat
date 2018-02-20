@@ -78,6 +78,10 @@ class Interpreter:
             return args[0]
         elif sfnid == "define_var":
             self.code_vars.init(args[0], args[1])
+        elif sfnid == "set_var":
+            self.code_vars.set(args[0], args[1])
+        elif sfnid == "unset_var":
+            self.code_vars.remove(args[0])
 
 
     def interpret(self, fncall: AtestatParser.FncallContext):
