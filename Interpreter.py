@@ -69,9 +69,13 @@ class Interpreter:
         return resolved_args
 
     def execute(self, fnid, args):
-        if fnid == "print":
+        sfnid = str(fnid)
+        if sfnid == "print":
             for arg in args:
                 print(arg)
+            return None
+        elif sfnid == "return":
+            return args[0]
 
     def interpret(self, fncall: AtestatParser.FncallContext):
         args = self.resolve_args(fncall.arg())
