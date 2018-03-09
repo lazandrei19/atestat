@@ -4,7 +4,7 @@ class VariableCTX:
 
     def get_index(self, key):
         if key in self.keys:
-            return len(self.keys) - 1 - self.keys[::-1].index(key)
+            return len(self.keys) - self.keys[::-1].index(key) - 1
         return None
 
     def get(self, key):
