@@ -2,6 +2,7 @@ from antlr4 import *
 from gen.AtestatParser import AtestatParser
 from gen.AtestatLexer import AtestatLexer
 from VariableCtx import VariableCTX
+from Interpreter import Interpreter
 
 class FunctionCTX:
     fnids = []
@@ -25,14 +26,8 @@ class FunctionCTX:
         self.ctx: VariableCTX
         for i in range(len(args)):
             self.ctx.init(self.args_lists[fnidi][i], interpreter.resolve_arg(args[i]))
-        lexer = AtestatLexer(InputStream(self.instructions[fnidi]))
-        stream = CommonTokenStream(lexer)
-        parser = AtestatParser(stream)
-        tree = parser.instructions()
-        ret = None
-        for fncall in tree.fncall():
-            ret = interpreter.interpret(fncall)
+        interpreter = Interpreter(InputStream(self.instructions[fnidi]), self.ctx, self)
         for i in range(len(args)):
             self.ctx.remove(self.args_lists[fnidi][i])
-        return ret
+        return interpreter.last_returned_value
 

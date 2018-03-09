@@ -1,18 +1,29 @@
 from antlr4 import *
 from gen.AtestatParser import AtestatParser
-from VariableCtx import VariableCTX
-from FunctionCtx import FunctionCTX
+from gen.AtestatLexer import AtestatLexer
 from typing import List
 
 
 class Interpreter:
 
-    code_vars = VariableCTX()
-    functions = FunctionCTX(code_vars)
+    code_vars = None
+    functions = None
     input: FileStream
+    i = 0
+    last_returned_value = None
 
-    def __init__(self, input: FileStream):
+    def __init__(self, input: InputStream, code_vars, functions):
         self.input = input
+        self.code_vars = code_vars
+        self.functions = functions
+        self.i = 0
+        lexer = AtestatLexer(input)
+        stream = CommonTokenStream(lexer)
+        parser = AtestatParser(stream)
+        tree = parser.instructions()
+        while self.i < len(tree.fncall()):
+            self.last_returned_value = self.interpret(tree.fncall(self.i))
+            self.i += 1
 
     def get_number(self, number: AtestatParser.Number):
         return float(str(number))
@@ -94,12 +105,12 @@ class Interpreter:
             return None
         elif sfnid == "return":
             return self.resolve_arg(args[0])
-        elif sfnid == "define_var":
-            self.code_vars.init(self.resolve_arg(args[0], False), self.resolve_arg(args[1]))
         elif sfnid == "set_var":
-            self.code_vars.set(self.resolve_arg(args[0], False), self.resolve_arg(args[1]))
+            self.code_vars.set(self.resolve_arg(args[0], True), self.resolve_arg(args[1]))
+            return None
         elif sfnid == "unset_var":
-            self.code_vars.remove(self.resolve_arg(args[0], False))
+            self.code_vars.remove(self.resolve_arg(args[0], True))
+            return None
         elif sfnid == "define_func":
             instructions = ""
             for i in range(2, len(args)):
@@ -107,6 +118,41 @@ class Interpreter:
             fn_args = self.resolve_arg(args[1], True)
             fn_id = self.resolve_arg(args[0], True)
             self.functions.add_function(fn_id, fn_args, instructions)
+            return None
+        elif sfnid == "cmp":
+            x = self.resolve_arg(args[0])
+            y = self.resolve_arg(args[1])
+            if x > y:
+                return 1
+            elif x < y:
+                return -1
+            else:
+                return 0
+        elif sfnid == "and":
+            for arg in args:
+                if str(self.resolve_arg(arg)) == "0.0":
+                    return 0
+            return 1
+        elif sfnid == "or":
+            for arg in args:
+                if str(self.resolve_arg(arg)) != "0.0":
+                    return 1
+            return 0
+        elif sfnid == "not":
+            return str(self.resolve_arg(args[0])) == "0.0"
+        elif sfnid == "if":
+            x = self.resolve_arg(args[0])
+            y = self.resolve_arg(args[1])
+            ret = None
+            if str(x) == str(y):
+                instructions = ""
+                for i in range(2, len(args)):
+                    instructions += self.resolve_arg(args[i], True) + " "
+                Interpreter(InputStream(instructions), self.code_vars, self.functions)
+            return ret
+        elif sfnid == "goto":
+            self.i = int(self.resolve_arg(args[0])) - 1
+            return None
         else:
             return self.functions.execute(sfnid, args, self)
         return None
