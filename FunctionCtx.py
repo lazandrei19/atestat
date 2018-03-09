@@ -32,7 +32,7 @@ class FunctionCTX:
         ret = None
         for fncall in tree.fncall():
             ret = interpreter.interpret(fncall)
-        for arg in args:
-            self.ctx.remove(arg)
+        for i in range(len(args)):
+            self.ctx.remove(self.args_lists[fnidi][i])
         return ret
 
