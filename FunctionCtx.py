@@ -6,7 +6,7 @@ from VariableCtx import VariableCTX
 class FunctionCTX:
     fnids = []
     args_lists = []
-    instrunctions = []
+    instructions = []
 
     ctx = None
 
@@ -16,7 +16,7 @@ class FunctionCTX:
     def add_function(self, fnid, args, instr):
         self.fnids.append(fnid)
         self.args_lists.append(args)
-        self.instrunctions.append(instr)
+        self.instructions.append(instr)
 
     def execute(self, fnid, args, interpreter):
         fnidi = self.fnids.index(fnid)
@@ -25,7 +25,7 @@ class FunctionCTX:
         self.ctx: VariableCTX
         for i in range(len(args)):
             self.ctx.init(self.args_lists[fnidi][i], interpreter.resolve_arg(args[i]))
-        lexer = AtestatLexer(InputStream(self.instrunctions[fnidi]))
+        lexer = AtestatLexer(InputStream(self.instructions[fnidi]))
         stream = CommonTokenStream(lexer)
         parser = AtestatParser(stream)
         tree = parser.instructions()
