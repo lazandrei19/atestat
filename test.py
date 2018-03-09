@@ -10,7 +10,7 @@ def main(argv):
     stream = CommonTokenStream(lexer)
     parser = AtestatParser(stream)
     tree = parser.instructions()
-    interpreter = Interpreter()
+    interpreter = Interpreter(input)
     for fncall in tree.fncall():
         interpreter.interpret(fncall)
 

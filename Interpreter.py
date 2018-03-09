@@ -2,12 +2,17 @@ from antlr4 import *
 from gen.AtestatParser import AtestatParser
 from VariableCtx import VariableCTX
 from FunctionCtx import FunctionCTX
+from typing import List
 
 
 class Interpreter:
 
     code_vars = VariableCTX()
     functions = FunctionCTX(code_vars)
+    input: FileStream
+
+    def __init__(self, input: FileStream):
+        self.input = input
 
     def get_number(self, number: AtestatParser.Number):
         return float(str(number))
@@ -42,18 +47,18 @@ class Interpreter:
     def execute_math(self, mfnid, arg):
         pass
 
-    def resolve_literal(self, literal: AtestatParser.LiteralContext, interpret=True):
+    def resolve_literal(self, literal: AtestatParser.LiteralContext, return_string=False):
         if literal.arrayLiteral() is not None:
             array: AtestatParser.ArrayLiteralContext
             array = literal.arrayLiteral()
             result = []
             for arg in array.arg():
-                result.append(self.resolve_arg(arg, interpret))
+                result.append(self.resolve_arg(arg, return_string))
             return result
         elif literal.mathFunctionLiteral() is not None:
             math_function: AtestatParser.MathFunctionLiteralContext
             math_function = literal.mathFunctionLiteral()
-            if not interpret:
+            if return_string:
                 return str(math_function.mathExpr())
             return self.analyze_math_expr(math_function.mathExpr())
         elif literal.StringLiteral() is not None:
@@ -61,24 +66,31 @@ class Interpreter:
         elif literal.Number() is not None:
             return self.get_number(literal.Number())
 
-    def resolve_arg(self, arg, interpret=True):
+    def resolve_arg(self, arg, return_string=False):
         resolved_arg = None
         arg: AtestatParser.ArgContext
         if arg.fncall() is not None:
+            if return_string:
+                x: AtestatParser.FncallContext
+                x = arg.fncall()
+                return self.input.getText(x.start.start, x.stop.stop)
             resolved_arg = self.interpret(arg.fncall())
         elif arg.literal() is not None:
-            resolved_arg = self.resolve_literal(arg.literal(), interpret)
+            resolved_arg = self.resolve_literal(arg.literal(), return_string)
         elif arg.ID() is not None:
-            if not interpret:
+            if return_string:
                 return str(arg.ID())
             resolved_arg = self.code_vars.get(str(arg.ID()))
         return resolved_arg
 
     def execute(self, fnid, args):
+        args: List[AtestatParser.ArgContext]
         sfnid = str(fnid)
         if sfnid == "print":
+            res_args = []
             for arg in args:
-                print(self.resolve_arg(arg))
+                res_args.append(str(self.resolve_arg(arg)))
+            print(" ".join(res_args))
             return None
         elif sfnid == "return":
             return self.resolve_arg(args[0])
@@ -91,14 +103,12 @@ class Interpreter:
         elif sfnid == "define_func":
             instructions = ""
             for i in range(2, len(args)):
-                instructions += str(args[i]) + " "
-            print(self.resolve_arg(args[1], False))
-            # for arg in self.resolve_arg(args[1], False):
-            #     print(arg.ID())
-            #     args.append(str(arg.ID()))
-            self.functions.add_function(self.resolve_arg(args[0], False), self.resolve_arg(args[1], False), instructions)
+                instructions += self.resolve_arg(args[i], True) + " "
+            fn_args = self.resolve_arg(args[1], True)
+            fn_id = self.resolve_arg(args[0], True)
+            self.functions.add_function(fn_id, fn_args, instructions)
         else:
-            self.functions.execute(sfnid, args, self)
+            return self.functions.execute(sfnid, args, self)
         return None
 
     def interpret(self, fncall: AtestatParser.FncallContext):
