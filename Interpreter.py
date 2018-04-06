@@ -16,6 +16,7 @@ class Interpreter:
     # TODO help menu
     # TODO dash adaptation
     # TODO error catching + reporting
+    # TODO REPL Interpreter
 
     def __init__(self, input: InputStream, code_vars, functions, upper_interpreter=None):
         self.input = input

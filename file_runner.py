@@ -14,6 +14,5 @@ def main(argv):
     Interpreter(input, code_vars, functions)
 
 
-
 if __name__ == '__main__':
     main(sys.argv)
