@@ -2,6 +2,7 @@ from antlr4 import *
 from gen.AtestatParser import AtestatParser
 from gen.AtestatLexer import AtestatLexer
 from typing import List
+from help import Help
 
 
 class Interpreter:
@@ -16,6 +17,7 @@ class Interpreter:
     # TODO help menu
     # TODO dash adaptation
     # TODO error catching + reporting
+    # TODO math functions
 
     def __init__(self, input: InputStream, code_vars, functions, upper_interpreter=None):
         self.input = input
@@ -117,11 +119,30 @@ class Interpreter:
             self.set_i(self.in_len)
             self.upper_interpreter.goto(levels_up - 1, line)
 
+    def print_with_indent(self, to_print, indent_level):
+        if isinstance(to_print, str):
+            print("\t"*indent_level + to_print)
+        else:
+            for key, value in to_print.items():
+                print("\t"*indent_level + key.title() + ":")
+                self.print_with_indent(value, indent_level + 1)
+
     def execute(self, fnid, args):
         args: List[AtestatParser.ArgContext]
         sfnid = str(fnid)
         if sfnid == "help":
-            pass
+            cmd = None
+            attr = None
+            if len(args) > 0:
+                cmd = str(self.resolve_arg(args[0], True))
+            if len(args) > 1:
+                attr = str(self.resolve_arg(args[0], True))
+            print = Help.help
+            if cmd is not None:
+                print = print[cmd]
+            if attr is not None:
+                print = print[attr]
+            self.print_with_indent(print, 0)
         elif sfnid == "print":
             res_args = []
             for arg in args:
