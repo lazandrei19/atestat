@@ -16,7 +16,6 @@ class Interpreter:
     # TODO help menu
     # TODO dash adaptation
     # TODO error catching + reporting
-    # TODO REPL Interpreter
 
     def __init__(self, input: InputStream, code_vars, functions, upper_interpreter=None):
         self.input = input
@@ -121,7 +120,9 @@ class Interpreter:
     def execute(self, fnid, args):
         args: List[AtestatParser.ArgContext]
         sfnid = str(fnid)
-        if sfnid == "print":
+        if sfnid == "help":
+            pass
+        elif sfnid == "print":
             res_args = []
             for arg in args:
                 res_args.append(str(self.resolve_arg(arg)))
@@ -136,7 +137,7 @@ class Interpreter:
         elif sfnid == "unset_var":
             self.code_vars.remove(self.resolve_arg(args[0], True))
             return None
-        elif sfnid == "define_func":
+        elif sfnid == "def_func":
             instructions = ""
             for i in range(2, len(args)):
                 instructions += self.resolve_arg(args[i], True) + " "
