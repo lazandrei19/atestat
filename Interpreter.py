@@ -11,19 +11,31 @@ class Interpreter:
     input: FileStream
     i = 0
     last_returned_value = None
+    in_len = 0
 
-    def __init__(self, input: InputStream, code_vars, functions):
+    # TODO help menu
+    # TODO dash adaptation
+    # TODO error catching + reporting
+
+    def __init__(self, input: InputStream, code_vars, functions, upper_interpreter=None):
         self.input = input
         self.code_vars = code_vars
         self.functions = functions
         self.i = 0
+        self.upper_interpreter = upper_interpreter
         lexer = AtestatLexer(input)
         stream = CommonTokenStream(lexer)
         parser = AtestatParser(stream)
         tree = parser.instructions()
-        while self.i < len(tree.fncall()):
+        self.in_len = len(tree.fncall())
+        varlen = len(code_vars.keys)
+        while self.i < self.in_len:
             self.last_returned_value = self.interpret(tree.fncall(self.i))
             self.i += 1
+        # removes local variables after use
+        for i in range(varlen, len(code_vars.keys)):
+            code_vars.values.pop(i)
+            code_vars.keys.pop(i)
 
     def get_number(self, number: AtestatParser.Number):
         return float(str(number))
@@ -94,6 +106,17 @@ class Interpreter:
             resolved_arg = self.code_vars.get(str(arg.ID()))
         return resolved_arg
 
+    def set_i(self, i):
+        self.i = i
+
+    def goto(self, levels_up, line):
+        if levels_up == 0:
+            # subtract 1 because interpreter will increase by one
+            self.set_i(line - 1)
+        elif self.upper_interpreter is not None:
+            self.set_i(self.in_len)
+            self.upper_interpreter.goto(levels_up - 1, line)
+
     def execute(self, fnid, args):
         args: List[AtestatParser.ArgContext]
         sfnid = str(fnid)
@@ -104,6 +127,7 @@ class Interpreter:
             print(" ".join(res_args))
             return None
         elif sfnid == "return":
+            self.set_i(self.in_len)
             return self.resolve_arg(args[0])
         elif sfnid == "set_var":
             self.code_vars.set(self.resolve_arg(args[0], True), self.resolve_arg(args[1]))
@@ -118,6 +142,10 @@ class Interpreter:
             fn_args = self.resolve_arg(args[1], True)
             fn_id = self.resolve_arg(args[0], True)
             self.functions.add_function(fn_id, fn_args, instructions)
+            return None
+        elif sfnid == "rem_func":
+            fn_id = self.resolve_arg(args[0], True)
+            self.functions.rem_function(fn_id)
             return None
         elif sfnid == "cmp":
             x = self.resolve_arg(args[0])
@@ -139,20 +167,26 @@ class Interpreter:
                     return 1
             return 0
         elif sfnid == "not":
-            return str(self.resolve_arg(args[0])) == "0.0"
+            return int(str(self.resolve_arg(args[0])) == "0.0")
         elif sfnid == "if":
             x = self.resolve_arg(args[0])
             y = self.resolve_arg(args[1])
             ret = None
-            if str(x) == str(y):
+            if float(x) == float(y):
                 instructions = ""
                 for i in range(2, len(args)):
                     instructions += self.resolve_arg(args[i], True) + " "
-                Interpreter(InputStream(instructions), self.code_vars, self.functions)
+                Interpreter(InputStream(instructions), self.code_vars, self.functions, self)
             return ret
         elif sfnid == "goto":
-            self.i = int(self.resolve_arg(args[0])) - 1
+            levels_up = int(self.resolve_arg(args[0]))
+            line = int(self.resolve_arg(args[1]))
+            self.goto(levels_up, line)
             return None
+        elif sfnid == "import":
+            filename = str(self.resolve_arg(args[0]))
+            with open(filename, "r") as f:
+                Interpreter(f.read(), self.code_vars, self.functions)
         else:
             return self.functions.execute(sfnid, args, self)
         return None
