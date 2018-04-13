@@ -6,6 +6,9 @@ from Interpreter import Interpreter
 from VariableCtx import VariableCTX
 from FunctionCtx import FunctionCTX
 
+code_vars = VariableCTX()
+functions = FunctionCTX(code_vars)
+
 
 def check_input(input):
     check = 0
@@ -16,9 +19,8 @@ def check_input(input):
             check -= 1
     return check == 0
 
-def main(argv):
-    code_vars = VariableCTX()
-    functions = FunctionCTX(code_vars)
+
+def main():
     while True:
         line = input(">>> ")
         if line == "-1":
@@ -26,8 +28,8 @@ def main(argv):
         while not check_input(line):
             add_line = input("  ... ")
             line += add_line
-        Interpreter(InputStream(line), code_vars, functions)
+        Interpreter(InputStream(line), code_vars, functions, None, print)
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main()

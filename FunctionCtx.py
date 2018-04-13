@@ -26,7 +26,7 @@ class FunctionCTX:
         self.ctx: VariableCTX
         for i in range(len(args)):
             self.ctx.init(self.args_lists[fnidi][i], interpreter.resolve_arg(args[i]))
-        interpreter_new = Interpreter(InputStream(self.instructions[fnidi]), self.ctx, self, interpreter)
+        interpreter_new = Interpreter(InputStream(self.instructions[fnidi]), self.ctx, self, interpreter, interpreter.echo)
         for i in range(len(args)):
             self.ctx.remove(self.args_lists[fnidi][i])
         return interpreter_new.last_returned_value

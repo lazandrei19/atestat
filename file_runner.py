@@ -11,7 +11,7 @@ def main(argv):
     input = FileStream(argv[1])
     code_vars = VariableCTX()
     functions = FunctionCTX(code_vars)
-    Interpreter(input, code_vars, functions)
+    Interpreter(input, code_vars, functions, None, print)
 
 
 if __name__ == '__main__':

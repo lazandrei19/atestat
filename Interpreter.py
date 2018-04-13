@@ -3,6 +3,7 @@ from gen.AtestatParser import AtestatParser
 from gen.AtestatLexer import AtestatLexer
 from typing import List
 from help import Help
+import math
 
 
 class Interpreter:
@@ -13,18 +14,22 @@ class Interpreter:
     i = 0
     last_returned_value = None
     in_len = 0
+    echo = None
 
-    # TODO help menu
     # TODO dash adaptation
     # TODO error catching + reporting
     # TODO math functions
+    # TODO execute shell commands
+    # TODO write to file
+    # TODO (print f"(1-1) + (1+2)^(3 - 5)")
 
-    def __init__(self, input: InputStream, code_vars, functions, upper_interpreter=None):
+    def __init__(self, input: InputStream, code_vars, functions, upper_interpreter, print):
         self.input = input
         self.code_vars = code_vars
         self.functions = functions
         self.i = 0
         self.upper_interpreter = upper_interpreter
+        self.echo = print
         lexer = AtestatLexer(input)
         stream = CommonTokenStream(lexer)
         parser = AtestatParser(stream)
@@ -35,9 +40,11 @@ class Interpreter:
             self.last_returned_value = self.interpret(tree.fncall(self.i))
             self.i += 1
         # removes local variables after use
-        for i in range(varlen, len(code_vars.keys)):
+        # TODO fix this here
+        """for i in range(varlen, len(code_vars.keys)):
             code_vars.values.pop(i)
             code_vars.keys.pop(i)
+        """
 
     def get_number(self, number: AtestatParser.Number):
         return float(str(number))
@@ -67,10 +74,43 @@ class Interpreter:
                 return self.analyze_math_expr(math_expr.mathExpr(0)) - self.analyze_math_expr(math_expr.mathExpr(1))
 
     def resolve_math_function(self, math_function:  AtestatParser.MathFunctionContext):
-        return self.execute_math(math_function.ID(), self.analyze_math_expr(math_function.mathExpr()))
+        return self.execute_math(str(math_function.ID()), self.analyze_math_expr(math_function.mathExpr()))
 
     def execute_math(self, mfnid, arg):
-        pass
+        if mfnid == "sin":
+            return math.sin(arg)
+        elif mfnid == "cos":
+            return math.cos(arg)
+        elif mfnid == "tg":
+            return math.tan(arg)
+        elif mfnid == "ctg":
+            return 1 / math.tan(arg)
+        elif mfnid == "ceil":
+            return math.ceil(arg)
+        elif mfnid == "floor":
+            return math.floor(arg)
+        elif mfnid == "round":
+            return round(arg)
+        elif mfnid == "abs":
+            return math.fabs(arg)
+        elif mfnid == "arcsin":
+            return math.asin(arg)
+        elif mfnid == "arccos":
+            return math.acos(arg)
+        elif mfnid == "arctg":
+            return math.atan(arg)
+        elif mfnid == "arcctg":
+            return math.atan(1/arg)
+        elif mfnid == "deg":
+            return math.degrees(arg)
+        elif mfnid == "rad":
+            return math.radians(arg)
+        elif mfnid == "ln":
+            return math.log(arg)
+        elif mfnid == "lg":
+            return math.log10(arg)
+        elif mfnid == "log":
+            return math.log2(arg)
 
     def resolve_literal(self, literal: AtestatParser.LiteralContext, return_string=False):
         if literal.arrayLiteral() is not None:
@@ -121,10 +161,10 @@ class Interpreter:
 
     def print_with_indent(self, to_print, indent_level):
         if isinstance(to_print, str):
-            print("\t"*indent_level + to_print)
+            self.echo("\t"*indent_level + to_print)
         else:
             for key, value in to_print.items():
-                print("\t"*indent_level + key.title() + ":")
+                self.echo("\t"*indent_level + key + ":")
                 self.print_with_indent(value, indent_level + 1)
 
     def execute(self, fnid, args):
@@ -137,17 +177,17 @@ class Interpreter:
                 cmd = str(self.resolve_arg(args[0], True))
             if len(args) > 1:
                 attr = str(self.resolve_arg(args[0], True))
-            print = Help.help
+            to_print = Help.help
             if cmd is not None:
-                print = print[cmd]
+                to_print = to_print[cmd]
             if attr is not None:
-                print = print[attr]
-            self.print_with_indent(print, 0)
+                to_print = to_print[attr]
+            self.print_with_indent(to_print, 0)
         elif sfnid == "print":
             res_args = []
             for arg in args:
                 res_args.append(str(self.resolve_arg(arg)))
-            print(" ".join(res_args))
+            self.echo(" ".join(res_args))
             return None
         elif sfnid == "return":
             self.set_i(self.in_len)
@@ -190,16 +230,16 @@ class Interpreter:
                     return 1
             return 0
         elif sfnid == "not":
-            return int(str(self.resolve_arg(args[0])) == "0.0")
+            return str(self.resolve_arg(args[0])) == "0.0"
         elif sfnid == "if":
             x = self.resolve_arg(args[0])
             y = self.resolve_arg(args[1])
             ret = None
-            if float(x) == float(y):
+            if str(x) == str(y):
                 instructions = ""
                 for i in range(2, len(args)):
                     instructions += self.resolve_arg(args[i], True) + " "
-                Interpreter(InputStream(instructions), self.code_vars, self.functions, self)
+                Interpreter(InputStream(instructions), self.code_vars, self.functions, self, self.echo)
             return ret
         elif sfnid == "goto":
             levels_up = int(self.resolve_arg(args[0]))
@@ -208,8 +248,14 @@ class Interpreter:
             return None
         elif sfnid == "import":
             filename = str(self.resolve_arg(args[0]))
-            with open(filename, "r") as f:
-                Interpreter(f.read(), self.code_vars, self.functions)
+            Interpreter(FileStream(filename), self.code_vars, self.functions, None, self.echo)
+        elif sfnid == "read":
+            var_id = self.resolve_arg(args[0], True)
+            prompt = "> "
+            if len(args) > 1:
+                prompt = self.resolve_arg(args[0])
+            cont = input(prompt)
+            self.code_vars.set(var_id, cont)
         else:
             return self.functions.execute(sfnid, args, self)
         return None
