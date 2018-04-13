@@ -16,14 +16,7 @@ class Interpreter:
     in_len = 0
     echo = None
 
-    # TODO dash adaptation
-    # TODO error catching + reporting
-    # TODO math functions
-    # TODO execute shell commands
-    # TODO write to file
-    # TODO (print f"(1-1) + (1+2)^(3 - 5)")
-
-    def __init__(self, input: InputStream, code_vars, functions, upper_interpreter, print):
+    def __init__(self, input: InputStream, code_vars, functions, upper_interpreter, print, clean_afterwards=True):
         self.input = input
         self.code_vars = code_vars
         self.functions = functions
@@ -40,11 +33,10 @@ class Interpreter:
             self.last_returned_value = self.interpret(tree.fncall(self.i))
             self.i += 1
         # removes local variables after use
-        # TODO fix this here
-        """for i in range(varlen, len(code_vars.keys)):
-            code_vars.values.pop(i)
-            code_vars.keys.pop(i)
-        """
+        if clean_afterwards:
+            for i in range(varlen, len(code_vars.keys)):
+                code_vars.values.pop(i)
+                code_vars.keys.pop(i)
 
     def get_number(self, number: AtestatParser.Number):
         return float(str(number))
@@ -55,23 +47,26 @@ class Interpreter:
         elif math_expr.ID() is not None:
             math_id = str(math_expr.ID())
             if math_id in self.code_vars.get_keys():
-                return self.code_vars.get(math_id)
+                return float(self.code_vars.get(math_id))
             else:
                 return 0
         elif math_expr.mathFunction() is not None:
             return self.resolve_math_function(math_expr.mathFunction())
-        elif math_expr.POW() is not None:
-            return pow(self.analyze_math_expr(math_expr.mathExpr(0)), self.analyze_math_expr(math_expr.mathExpr(1)))
-        elif math_expr.TIMES() is not None or math_expr.DIV() is not None:
-            if math_expr.TIMES() is not None:
-                return self.analyze_math_expr(math_expr.mathExpr(0)) * self.analyze_math_expr(math_expr.mathExpr(1))
-            else:
-                return self.analyze_math_expr(math_expr.mathExpr(0)) / self.analyze_math_expr(math_expr.mathExpr(1))
-        elif math_expr.PLUS() is not None or math_expr.MINUS() is not None:
-            if math_expr.PLUS() is not None:
-                return self.analyze_math_expr(math_expr.mathExpr(0)) + self.analyze_math_expr(math_expr.mathExpr(1))
-            else:
-                return self.analyze_math_expr(math_expr.mathExpr(0)) - self.analyze_math_expr(math_expr.mathExpr(1))
+        elif math_expr.LPARAN() is not None:
+            return self.analyze_math_expr(math_expr.mathExpr(0))
+        else:
+            left_op = float(self.analyze_math_expr(math_expr.mathExpr(0)))
+            right_op = float(self.analyze_math_expr(math_expr.mathExpr(1)))
+            if math_expr.POW() is not None:
+                return pow(left_op, right_op)
+            elif math_expr.TIMES() is not None:
+                return left_op * right_op
+            elif math_expr.DIV() is not None:
+                return left_op / right_op
+            elif math_expr.PLUS() is not None:
+                return left_op + right_op
+            elif math_expr.MINUS() is not None:
+                return left_op - right_op
 
     def resolve_math_function(self, math_function:  AtestatParser.MathFunctionContext):
         return self.execute_math(str(math_function.ID()), self.analyze_math_expr(math_function.mathExpr()))
