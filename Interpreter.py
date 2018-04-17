@@ -274,11 +274,21 @@ class Interpreter:
             new_list = old_list[:]
             new_list.insert(int(index), val)
             self.code_vars.set(var, new_list)
+            return None
         elif sfnid == "get_item":
-            pass
+            var = self.resolve_arg(args[0], True)
+            index = int(self.resolve_arg(args[1], False))
+            vals = self.code_vars.get(var)
+            if not isinstance(vals, list):
+                return None
+            if len(vals) <= index:
+                return None
+            return vals[index]
         elif sfnid == "remove_item":
             pass
         elif sfnid == "comment":
+            pass
+        elif sfnid == "is_none":
             pass
         else:
             return self.functions.execute(sfnid, args, self)
