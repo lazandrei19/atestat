@@ -35,8 +35,8 @@ class Interpreter:
         # removes local variables after use
         if clean_afterwards:
             for i in range(varlen, len(code_vars.keys)):
-                code_vars.values.pop(i)
-                code_vars.keys.pop(i)
+                code_vars.values.pop()
+                code_vars.keys.pop()
 
     def get_number(self, number: AtestatParser.Number):
         return float(str(number))
@@ -229,8 +229,8 @@ class Interpreter:
         elif sfnid == "not":
             return str(self.resolve_arg(args[0])) == "0.0"
         elif sfnid == "if":
-            x = self.resolve_arg(args[0])
-            y = self.resolve_arg(args[1])
+            x = float(self.resolve_arg(args[0]))
+            y = float(self.resolve_arg(args[1]))
             ret = None
             if str(x) == str(y):
                 instructions = ""
@@ -293,6 +293,12 @@ class Interpreter:
             if len(vals) <= index:
                 return None
             del vals[index]
+        elif sfnid == "get_len":
+            var = self.resolve_arg(args[0], True)
+            vals = self.code_vars.get(var)
+            if not isinstance(vals, list):
+                return 0
+            return len(vals)
         elif sfnid == "comment":
             pass
         elif sfnid == "is_none":
