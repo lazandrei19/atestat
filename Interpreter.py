@@ -260,6 +260,26 @@ class Interpreter:
             fn_id = self.resolve_arg(args[0], True)
             self.functions.add_function("math__" + fn_id, ['__x'], instructions)
             return None
+        elif sfnid == "rem_math_func":
+            fn_id = self.resolve_arg(args[0], True)
+            self.functions.rem_function("math__" + fn_id)
+            return None
+        elif sfnid == "add_item":
+            var = self.resolve_arg(args[0], True)
+            index = self.resolve_arg(args[1], False)
+            val = self.resolve_arg(args[2], False)
+            old_list = self.code_vars.get(var)
+            if not isinstance(old_list, list):
+                return None
+            new_list = old_list[:]
+            new_list.insert(int(index), val)
+            self.code_vars.set(var, new_list)
+        elif sfnid == "get_item":
+            pass
+        elif sfnid == "remove_item":
+            pass
+        elif sfnid == "comment":
+            pass
         else:
             return self.functions.execute(sfnid, args, self)
         return None
