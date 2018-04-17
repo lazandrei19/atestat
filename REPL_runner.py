@@ -28,7 +28,8 @@ def main():
         while not check_input(line):
             add_line = input("  ... ")
             line += add_line
-        Interpreter(InputStream(line), code_vars, functions, None, print, False)
+        result = Interpreter(InputStream(line), code_vars, functions, None, print, False)
+        print("<<< {}".format(result.last_returned_value))
 
 
 if __name__ == '__main__':

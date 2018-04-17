@@ -106,6 +106,8 @@ class Interpreter:
             return math.log10(arg)
         elif mfnid == "log":
             return math.log2(arg)
+        else:
+            return self.functions.execute("math__" + mfnid, [arg], self)
 
     def resolve_literal(self, literal: AtestatParser.LiteralContext, return_string=False):
         if literal.arrayLiteral() is not None:
@@ -251,6 +253,13 @@ class Interpreter:
                 prompt = self.resolve_arg(args[0])
             cont = input(prompt)
             self.code_vars.set(var_id, cont)
+        elif sfnid == "def_math_func":
+            instructions = ""
+            for i in range(1, len(args)):
+                instructions += self.resolve_arg(args[i], True) + " "
+            fn_id = self.resolve_arg(args[0], True)
+            self.functions.add_function("math__" + fn_id, ['__x'], instructions)
+            return None
         else:
             return self.functions.execute(sfnid, args, self)
         return None
