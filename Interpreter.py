@@ -285,7 +285,14 @@ class Interpreter:
                 return None
             return vals[index]
         elif sfnid == "remove_item":
-            pass
+            var = self.resolve_arg(args[0], True)
+            index = int(self.resolve_arg(args[1], False))
+            vals = self.code_vars.get(var)
+            if not isinstance(vals, list):
+                return None
+            if len(vals) <= index:
+                return None
+            del vals[index]
         elif sfnid == "comment":
             pass
         elif sfnid == "is_none":
