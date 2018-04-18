@@ -26,3 +26,22 @@
     )
     (return new)
 )
+
+(def_func fibonacci [n]
+    (init_var a 1)
+    (init_var b 1)
+    (init_var c 2)
+    (if (cmp n 1) -1 (set_var c -1))
+    (if n 1 (set_var c 1))
+    (if n 2 (set_var c 1))
+    (if n 3 (set_var c 2))
+    (init_var i 3)
+    (if (cmp i n) -1
+        (set_var a b)
+        (set_var b c)
+        (set_var c f"a + b")
+        (set_var i f"i + 1")
+        (goto 1 8)
+    )
+    (return c)
+)
