@@ -117,14 +117,18 @@ class Interpreter:
             for arg in array.arg():
                 result.append(self.resolve_arg(arg, return_string))
             return result
-        elif literal.mathFunctionLiteral() is not None:
-            math_function: AtestatParser.MathFunctionLiteralContext
-            math_function = literal.mathFunctionLiteral()
-            if return_string:
-                return str(math_function.mathExpr())
-            return self.analyze_math_expr(math_function.mathExpr())
         elif literal.StringLiteral() is not None:
-            return str(literal.StringLiteral())[1:-1]
+            if str(literal.StringLiteral())[0] == "f":
+                input = InputStream(str(literal.StringLiteral())[2:-1])
+                lexer = AtestatLexer(input)
+                stream = CommonTokenStream(lexer)
+                parser = AtestatParser(stream)
+                math_function = parser.mathExpr()
+                if return_string:
+                    return str(math_function)
+                return self.analyze_math_expr(math_function)
+            else:
+                return str(literal.StringLiteral())[1:-1]
         elif literal.Number() is not None:
             return self.get_number(literal.Number())
 

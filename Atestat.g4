@@ -5,15 +5,15 @@ RPARAN : ')' ;
 LSQBRACK : '[' ;
 RSQBRACK : ']' ;
 COMMA : ',' ;
-DBLQUOTE : '"' ;
 MATHFSTART : 'f"' ;
+DBLQUOTE : '"' ;
 PLUS : '+' ;
 MINUS : '-' ;
 TIMES : '*' ;
 DIV : '/' ;
 POW : '^' ;
 Number : IntLiteral | FloatLiteral ;
-StringLiteral : DBLQUOTE ~('\r' | '\n' | '"')* DBLQUOTE ;
+StringLiteral : (DBLQUOTE|MATHFSTART) ~('\r' | '\n' | '"')* DBLQUOTE ;
 IntLiteral : MINUS? [0-9]+ ;
 FloatLiteral : MINUS? [0-9]+ '.' [0-9]+ ;
 instructions : fncall+ EOF;
@@ -23,8 +23,7 @@ arg : fncall
     | ID ;
 literal : StringLiteral
         | Number
-        | arrayLiteral
-        | mathFunctionLiteral ;
+        | arrayLiteral ;
 arrayLiteral : LSQBRACK (arg COMMA)* arg? RSQBRACK ;
 mathFunctionLiteral : MATHFSTART mathExpr DBLQUOTE ;
 mathExpr : mathExpr POW mathExpr
