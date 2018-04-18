@@ -188,7 +188,15 @@ class Interpreter:
             return None
         elif sfnid == "return":
             self.set_i(self.in_len)
-            return self.resolve_arg(args[0])
+            val = self.resolve_arg(args[0])
+            return val
+        elif sfnid == "init_var":
+            var_id = self.resolve_arg(args[0], True)
+            val = None
+            if len(args) > 1:
+                val = self.resolve_arg(args[1])
+            self.code_vars.init(var_id, val)
+            return None
         elif sfnid == "set_var":
             self.code_vars.set(self.resolve_arg(args[0], True), self.resolve_arg(args[1]))
             return None
@@ -211,28 +219,28 @@ class Interpreter:
             x = self.resolve_arg(args[0])
             y = self.resolve_arg(args[1])
             if x > y:
-                return 1
+                return 1.0
             elif x < y:
-                return -1
+                return -1.0
             else:
-                return 0
+                return 0.0
         elif sfnid == "and":
             for arg in args:
                 if str(self.resolve_arg(arg)) == "0.0":
-                    return 0
-            return 1
+                    return 0.0
+            return 1.0
         elif sfnid == "or":
             for arg in args:
                 if str(self.resolve_arg(arg)) != "0.0":
-                    return 1
-            return 0
+                    return 1.0
+            return 0.0
         elif sfnid == "not":
-            return str(self.resolve_arg(args[0])) == "0.0"
+            return float(self.resolve_arg(args[0]) == "0.0")
         elif sfnid == "if":
-            x = float(self.resolve_arg(args[0]))
-            y = float(self.resolve_arg(args[1]))
+            x = str(self.resolve_arg(args[0]))
+            y = str(self.resolve_arg(args[1]))
             ret = None
-            if str(x) == str(y):
+            if x == y:
                 instructions = ""
                 for i in range(2, len(args)):
                     instructions += self.resolve_arg(args[i], True) + " "
