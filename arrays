@@ -1,0 +1,28 @@
+(def_func find [arr, val]
+    (init_var len (get_len arr))
+    (init_var index -1)
+    (init_var i 0)
+    (if (cmp i len) -1
+        (if (get_item arr i) val
+            (set_var index i)
+        )
+        (set_var i f"i + 1")
+        (goto 1 3)
+    )
+    (return index)
+)
+
+(def_func uniq [arr]
+    (init_var len (get_len arr))
+    (init_var i 0)
+    (init_var new [])
+    (if (cmp i len) -1
+        (init_var val (get_item arr i))
+        (if (find new val) -1
+            (add_item new (get_len new) val)
+        )
+        (set_var i f"i + 1")
+        (goto 1 3)
+    )
+    (return new)
+)
