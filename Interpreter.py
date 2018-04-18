@@ -310,7 +310,9 @@ class Interpreter:
         elif sfnid == "comment":
             pass
         elif sfnid == "is_none":
-            pass
+            var_id = self.resolve_arg(args[0], True)
+            val = self.code_vars.get(var_id)
+            return float(val is None)
         else:
             return self.functions.execute(sfnid, args, self)
         return None
