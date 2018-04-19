@@ -45,3 +45,18 @@
     )
     (return c)
 )
+
+(def_func divs [n]
+    (init_var d 2)
+    (init_var divis [])
+    (if (cmp f"d" f"n + 1") -1
+        (if f"n % d" 0
+            (add_item divis (get_len divis) d)
+            (set_var n f"n / d")
+            (goto 1 0)
+        )
+        (set_var d f"d + 1")
+        (goto 1 2)
+    )
+    (return divis)
+)

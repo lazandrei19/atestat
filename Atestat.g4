@@ -12,6 +12,7 @@ MINUS : '-' ;
 TIMES : '*' ;
 DIV : '/' ;
 POW : '^' ;
+MOD : '%' ;
 Number : IntLiteral | FloatLiteral ;
 StringLiteral : (DBLQUOTE|MATHFSTART) ~('\r' | '\n' | '"')* DBLQUOTE ;
 IntLiteral : MINUS? [0-9]+ ;
@@ -28,6 +29,7 @@ arrayLiteral : LSQBRACK (arg COMMA)* arg? RSQBRACK ;
 mathFunctionLiteral : MATHFSTART mathExpr DBLQUOTE ;
 mathExpr : mathExpr POW mathExpr
          | mathExpr (TIMES | DIV) mathExpr
+         | mathExpr MOD mathExpr
          | mathExpr (PLUS | MINUS) mathExpr
          | LPARAN mathExpr RPARAN
          | mathFunction

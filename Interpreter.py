@@ -67,6 +67,8 @@ class Interpreter:
                 return left_op + right_op
             elif math_expr.MINUS() is not None:
                 return left_op - right_op
+            elif math_expr.MOD() is not None:
+                return left_op % right_op
 
     def resolve_math_function(self, math_function:  AtestatParser.MathFunctionContext):
         return self.execute_math(str(math_function.ID()), self.analyze_math_expr(math_function.mathExpr()))
